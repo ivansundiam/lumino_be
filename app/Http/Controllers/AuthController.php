@@ -19,7 +19,7 @@ class AuthController extends Controller
     public function register(RegisterRequest $request): JsonResponse
     {
         $validatedData = $request->validated();
-        $validatedData['password'] = bcrypt($validatedData['password']);
+        $validatedData['password'] = Hash::password($validatedData['password']);
 
         $user = User::create($validatedData);
         $token = $user->createToken('auth-token')->plainTextToken;
