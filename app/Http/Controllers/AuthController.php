@@ -8,7 +8,9 @@ use App\Models\User;
 use App\Traits\ApiResponse;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use Symfony\Component\HttpFoundation\Response;
 
 class AuthController extends Controller
 {
@@ -17,7 +19,7 @@ class AuthController extends Controller
     public function register(RegisterRequest $request): JsonResponse
     {
         $validatedData = $request->validated();
-        $validatedData['password'] = Hash::password($validatedData['password']);
+        $validatedData['password'] = Hash::make($validatedData['password']);
 
         $user = User::create($validatedData);
         $token = $user->createToken('auth-token')->plainTextToken;
@@ -31,7 +33,7 @@ class AuthController extends Controller
     public function login(LoginRequest $request): JsonResponse
     {
         $user = User::where('email', $request->email)->first();
-        if (!$user || !Hash::check($request->password, (string) $user->password)) {
+        if (!$user || !Auth::attempt(($request->validated()))) {
             return $this->unauthorized('Incorrect email or password.');
         }
 
