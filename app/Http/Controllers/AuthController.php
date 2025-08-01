@@ -10,6 +10,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
 use Symfony\Component\HttpFoundation\Response;
 
 class AuthController extends Controller
@@ -22,12 +23,9 @@ class AuthController extends Controller
         $validatedData['password'] = Hash::make($validatedData['password']);
 
         $user = User::create($validatedData);
-        $token = $user->createToken('auth-token')->plainTextToken;
+        Auth::login($user);
 
-        return $this->created([
-            'user' => $user,
-            'token' => $token
-        ]);
+        return $this->created($user, 'User registered successfully.');
     }
 
     public function login(LoginRequest $request): JsonResponse
@@ -37,17 +35,19 @@ class AuthController extends Controller
             return $this->unauthorized('Incorrect email or password.');
         }
 
-        $token = $user->createToken('auth-token')->plainTextToken;
+        $request->session()->regenerate();
 
         return $this->success([
-            'user' => $user,
-            'token' => $token
-        ], 'Logged in successfully');
+            'user' => Auth::user(),
+        ], 'Logged in successfully.');
     }
 
     public function logout(Request $request)
     {
-        $request->user()->currentAccessToken()->delete();
+        Auth::guard('web')->logout();
+
+        $request->session()->invalidate();
+        $request->session()->regenerate();
 
         return $this->success(null, 'Logged out successfully');
     }
