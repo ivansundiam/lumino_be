@@ -23,9 +23,13 @@ class AuthController extends Controller
         $validatedData['password'] = Hash::make($validatedData['password']);
 
         $user = User::create($validatedData);
-        Auth::login($user);
 
-        return $this->created($user, 'User registered successfully.');
+        Auth::login($user);
+        $request->session()->regenerate();
+
+        return $this->created([
+            'user' => $user,
+        ], 'User registered successfully.');
     }
 
     public function login(LoginRequest $request): JsonResponse
@@ -42,7 +46,7 @@ class AuthController extends Controller
         ], 'Logged in successfully.');
     }
 
-    public function logout(Request $request)
+    public function logout(Request $request): JsonResponse
     {
         Auth::guard('web')->logout();
 
