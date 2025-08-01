@@ -27,9 +27,7 @@ class AuthController extends Controller
         Auth::login($user);
         $request->session()->regenerate();
 
-        return $this->created([
-            'user' => $user,
-        ], 'User registered successfully.');
+        return $this->created($user, 'User registered successfully.');
     }
 
     public function login(LoginRequest $request): JsonResponse
@@ -41,9 +39,7 @@ class AuthController extends Controller
 
         $request->session()->regenerate();
 
-        return $this->success([
-            'user' => Auth::user(),
-        ], 'Logged in successfully.');
+        return $this->success($user, 'Logged in successfully.');
     }
 
     public function logout(Request $request): JsonResponse
